@@ -80,6 +80,87 @@ class AuthController extends Controller
         }
     }
 
+    public function getProfile(Request $request){
+        $user = User::with('profile')->find($request->user()->id); 
+
+        if ($user && $user->profile) {
+            return response()->json([
+                'data' => $user
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'User or Profile not found',
+            ], 404);
+        }
+    }
+
+    public function updateProfile(Request $request)
+{
+    // Xác thực dữ liệu đầu vào
+    $validateUser = Validator::make(
+        $request->all(),
+        [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'nick_name' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'date_of_birth' => 'nullable|date',
+            'class_name' => 'nullable|string|max:255',
+            'school_name' => 'nullable|string|max:255',
+            'hashtag' => 'nullable|string|max:255',
+        ]
+    );
+
+    if ($validateUser->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation error',
+            'errors' => $validateUser->errors(),
+        ], 400);
+    }
+
+    // Lấy người dùng hiện tại
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User not found',
+        ], 404);
+    }
+
+    // Cập nhật thông tin cơ bản của người dùng
+    $user->first_name = $request->first_name;
+    $user->last_name = $request->last_name;
+    $user->save();
+
+    // Cập nhật thông tin profile của người dùng
+    $profile = ProfileUser::where('user_id', $user->id)->first();
+
+    if ($profile) {
+        $profile->nick_name = $request->nick_name ?? $profile->nick_name;
+        $profile->address = $request->address ?? $profile->address;
+        $profile->date_of_birth = $request->date_of_birth ?? $profile->date_of_birth;
+        $profile->class_name = $request->class_name ?? $profile->class_name;
+        $profile->school_name = $request->school_name ?? $profile->school_name;
+        $profile->hashtag = $request->hashtag ?? $profile->hashtag;
+        $profile->save();
+    } else {
+        return response()->json([
+            'status' => false,
+            'message' => 'Profile not found',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Profile updated successfully',
+    ], 200);
+}
+
+    
+
 
     public function login(Request $request)
     {
