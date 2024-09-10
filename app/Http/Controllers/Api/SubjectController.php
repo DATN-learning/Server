@@ -98,7 +98,7 @@ class SubjectController extends Controller
 {
     // Xác thực dữ liệu đầu vào
     $validator = Validator::make($request->all(), [
-        'id' => 'required|exists:subjects,id', 
+        'id_subject' => 'required|exists:subjects,id_subject', 
         'name_subject' => 'string|max:255',
         'logo_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         
@@ -109,7 +109,7 @@ class SubjectController extends Controller
     }
 
     // Lấy đối tượng subject theo id
-    $subject = Subject::where('id', $request->id)->first();
+    $subject = Subject::where('id_subject', $request->id_subject)->first();
 
     if (!$subject) {
         return response()->json([

@@ -123,6 +123,62 @@ class LesstionController extends Controller
         }
     }
 
+    public function updateLession(Request $request){
+        $validator = Validator::make($request->all(), [
+            
+            'id_lession_chapter' => 'required|exists:lesstion_chapters,id_lession_chapter', 
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+        $lession = LesstionChapter::where('id_lession_chapter', $request->id_lession_chapter)->first();
+        if (empty($lession)) {
+            return response()->json([
+                'message' => 'lession not found'
+            ], 200);
+        }
+        $lession->name_lesstion_chapter = $request->name_lesstion_chapter;
+        $lession->number_lesstion_chapter = $request->number_lesstion_chapter;
+        $lession->description_lesstion_chapter = $request->description_lesstion_chapter ? $request->description_lesstion_chapter : '';
+        $check = $lession->save();
+        if ($check) {
+            return response()->json([
+                'message' => 'update lession success'
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'update lession fail'
+            ], 200);
+        }
+    }
+
+    public function deleteLession(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_lesstion_chapter' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+        $lession = LesstionChapter::where('id_lesstion_chapter', $request->id_lesstion_chapter)->first();
+        if (empty($lession)) {
+            return response()->json([
+                'message' => 'lession not found'
+            ], 200);
+        }
+        $check = $lession->delete();
+        if ($check) {
+            return response()->json([
+                'message' => 'delete lession success'
+                
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'delete lession fail'
+            ], 200);
+        }
+    }
+
     public function addSlideLession(Request $request)
     {
         $validator = Validator::make($request->all(), [
