@@ -89,7 +89,6 @@ class AuthController extends Controller
             ], 200);
         } else {
             return response()->json([
-                'status' => false,
                 'message' => 'User or Profile not found',
             ], 404);
         }
@@ -101,8 +100,8 @@ class AuthController extends Controller
     $validateUser = Validator::make(
         $request->all(),
         [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
             'nick_name' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date',
@@ -114,7 +113,6 @@ class AuthController extends Controller
 
     if ($validateUser->fails()) {
         return response()->json([
-            'status' => false,
             'message' => 'Validation error',
             'errors' => $validateUser->errors(),
         ], 400);
@@ -125,7 +123,6 @@ class AuthController extends Controller
 
     if (!$user) {
         return response()->json([
-            'status' => false,
             'message' => 'User not found',
         ], 404);
     }
