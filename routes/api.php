@@ -31,6 +31,8 @@ Route::post('/auth/adminLogin', [AuthController::class, 'adminLogin'])->name('au
 Route::post('/auth/checktoken', [AuthController::class, 'loginByToken'])->name('auth.checktoken');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('auth:sanctum');
 Route::post('/auth/logoutall', [AuthController::class, 'logoutAll'])->name('auth.logoutall');
+Route::get('/auth/getprofile', [AuthController::class, 'getProfile'])->name('auth.getProfile')->middleware('auth:sanctum');
+Route::post('/auth/updateprofile', [AuthController::class, 'updateProfile'])->name('auth.updateProfile')->middleware('auth:sanctum');
 //class
 Route::get('/classroom', [ClassController::class, 'index'])->name('classroom.index');
 Route::post('/classroom', [ClassController::class, 'store'])->name('classroom.store')->middleware('auth:sanctum');
