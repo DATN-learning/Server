@@ -66,14 +66,14 @@ class SubjectController extends Controller
     public function deleteSubject(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id' => 'required',
+            'id_subject' => 'required',
         ]);
     
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
     
-        $subject = Subject::where('id', $request->id)->first();
+        $subject = Subject::where('id_subject', $request->id_subject)->first();
     
         if (!$subject) {
             return response()->json([
