@@ -151,4 +151,69 @@ class QuestitonController extends Controller
     }
 }
 
+    public function updateQuestion(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_question' => 'required'
+            
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $question = Question::where('id', $request->id)->first();
+
+        if (!$question) {
+            return response()->json([
+                'message' => 'Question not found',
+            ], 404);
+        }
+
+        $question->title = $request->title;
+        $question->description = $request->description;
+        $question->answer_correct = $request->answer_correct;
+        $question->level_question = $request->level_question;
+        $question->number_question = $request->number_question;
+
+        $answer = Answer::where('question_id', $question->id)->get();
+
+        if($answer){
+            foreach ($answer as $ans) {
+                $ans->answer_text = $request->answer_text;
+            }
+        }
+    }
+
+    public function deleteQuestion(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_question' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $question = Question::where('id_question', $request->id_question)->first();
+
+        if (!$question) {
+            return response()->json([
+                'message' => 'Question not found',
+            ], 404);
+        }
+
+        $check = $question->delete();
+
+        if ($check) {
+            return response()->json([
+                'message' => 'Question deleted successfully',
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'Error deleting question',
+            ], 500);
+        }
+    }
+
 }

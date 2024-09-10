@@ -51,11 +51,15 @@ Route::post('/classroom/deleteChapterByID', [ChapterController::class, 'deleteCh
 Route::post('/classroom/getLessionById', [LesstionController::class, 'getLessionByID'])->name('classroom.getSubjectChapterLession')->middleware('auth:sanctum');
 Route::post('/classroom/createLession', [LesstionController::class, 'createLession'])->name('classroom.createLession')->middleware('auth:sanctum');
 Route::post('/classroom/addSlideLession', [LesstionController::class, 'addSlideLession'])->name('classroom.addSlideLession')->middleware('auth:sanctum');
+Route::post('/classroom/deleteLession', [LesstionController::class, 'deleteLession'])->name('classroom.deleteLession')->middleware('auth:sanctum');
+Route::post('/classroom/updateLession', [LesstionController::class, 'updateLession'])->name('classroom.updateLession')->middleware('auth:sanctum');
 // ?chapter exercise
 Route::post('/classroom/getChapterExercises', [ChapterController::class, 'getChapterExercises'])->name('classroom.getChapterExercises')->middleware('auth:sanctum');
 // question
 Route::post('/question/getQuestionByIDQR', [QuestitonController::class, 'getQuestionByIDQR'])->name('question.getQuestionByIDQR')->middleware('auth:sanctum');
 Route::post('/question/createQuestion', [QuestitonController::class, 'createQuestion'])->name('question.createQuestion')->middleware('auth:sanctum');
+Route::post('/question/updateQuestion', [QuestitonController::class, 'updateQuestion'])->name('question.updateQuestion')->middleware('auth:sanctum');
+Route::post('/question/deleteQuestion', [QuestitonController::class, 'deleteQuestion'])->name('question.deleteQuestion')->middleware('auth:sanctum');
 //posts
 Route::post('/manapost/createPostQuestion', [PostController::class, 'createPostQuestion'])->name('manapost.createPostQuestion')->middleware('auth:sanctum');
 Route::get('/manapost/getPostQuestion', [PostController::class, 'getPostQuestion'])->name('manapost.getPostQuestion');
