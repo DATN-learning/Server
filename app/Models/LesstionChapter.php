@@ -9,7 +9,7 @@ class LesstionChapter extends Model
 {
     use HasFactory;
     protected $table = 'lesstion_chapters';
-    protected $primaryKey = 'id_lesstion_chapter';
+    // protected $primaryKey = 'id_lesstion_chapter';
     protected $fillable = [
         'id_lesstion_chapter',
         'chapter_subject_id ',
