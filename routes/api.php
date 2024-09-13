@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\LesstionController;
 use App\Http\Controllers\Api\QuestitonController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TokenNotificationController;
+use App\Http\Controllers\Api\ChatGptController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -69,3 +71,5 @@ Route::get('/manapost/getCommentPost', [PostController::class, 'getCommentPost']
 Route::post('/manapost/createCommentPost', [PostController::class, 'createCommentPost'])->name('manapost.createCommentPost')->middleware('auth:sanctum');
 // token notification
 Route::post('/tokennotification', [TokenNotificationController::class, 'createTokenDevice'])->name('tokennotification.store');
+// chatgpt
+Route::get('/chatgpt/ask', [ChatGptController::class, 'ask'])->name('chatgpt.ask');
