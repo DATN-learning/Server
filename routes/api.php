@@ -39,7 +39,7 @@ Route::post('/classroom', [ClassController::class, 'store'])->name('classroom.st
 
 //subject
 Route::post('/classroom/createSubject', [SubjectController::class, 'createSubject'])->name('classroom.createSubject')->middleware('auth:sanctum');
-Route::delete('/classroom/deleteSubject', [SubjectController::class, 'deleteSubject'])->name('classroom.deleteSubject')->middleware('auth:sanctum');
+Route::post('/classroom/deleteSubject', [SubjectController::class, 'deleteSubject'])->name('classroom.deleteSubject')->middleware('auth:sanctum');
 Route::post('/classroom/updateSubject', [SubjectController::class, 'updateSubject'])->name('classroom.updateSubject')->middleware('auth:sanctum');
 
 Route::post('/classroom/getChapterSubject', [ChapterController::class, 'getChapterSubject'])->name('classroom.getChapterSubject')->middleware('auth:sanctum');

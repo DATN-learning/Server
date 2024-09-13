@@ -151,39 +151,62 @@ class QuestitonController extends Controller
     }
 }
 
-    public function updateQuestion(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'id_question' => 'required'
-            
-        ]);
+public function updateQuestion(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'id' => 'required',
+        'answers' => 'array|min:1'  // Yêu cầu mảng các câu trả lời để cập nhật
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
-        }
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 400);
+    }
 
-        $question = Question::where('id', $request->id)->first();
+    // Tìm câu hỏi theo id_question
+    $question = Question::where('id', $request->id)->first();
 
-        if (!$question) {
-            return response()->json([
-                'message' => 'Question not found',
-            ], 404);
-        }
+    if (!$question) {
+        return response()->json([
+            'message' => 'Question not found',
+        ], 404);
+    }
 
-        $question->title = $request->title;
-        $question->description = $request->description;
-        $question->answer_correct = $request->answer_correct;
-        $question->level_question = $request->level_question;
-        $question->number_question = $request->number_question;
+    // Cập nhật các trường của câu hỏi
+    $question->title = $request->title ?? $question->title;
+    $question->description = $request->description ?? $question->description;
+    $question->level_question = $request->level_question ?? $question->level_question;
+    $question->number_question = $request->number_question ?? $question->number_question;
 
-        $answer = Answer::where('question_id', $question->id)->get();
+    // Duyệt qua mảng các câu trả lời được gửi từ request
+    foreach ($request->answers as $answerData) {
+        if (isset($answerData['id_answer'])) {
+            // Tìm câu trả lời theo id_answer và question_id
+            $answer = Answer::where('id_answer', $answerData['id_answer'])
+                            ->where('question_id', $question->id) // Sử dụng id của bảng Question
+                            ->first();
 
-        if($answer){
-            foreach ($answer as $ans) {
-                $ans->answer_text = $request->answer_text;
+            if ($answer) {
+                // Cập nhật câu trả lời
+                $answer->answer_text = $answerData['answer_text'] ?? $answer->answer_text;
+                $answer->save();
+                
+                // Nếu id_answer trùng với answer_correct mới, cập nhật trường answer_correct
+                if ($request->answer_correct == $answer->id_answer) {
+                    $question->answer_correct = $answer->id_answer;
+                }
             }
         }
     }
+
+    // Lưu các thay đổi của câu hỏi
+    $question->save();
+
+    return response()->json([
+        'message' => 'Question and answers updated successfully',
+    ], 200);
+}
+
+
 
     public function deleteQuestion(Request $request)
     {
