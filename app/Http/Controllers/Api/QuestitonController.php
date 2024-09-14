@@ -69,87 +69,97 @@ class QuestitonController extends Controller
         return $listUrlImage;
     }
 
-    public function createQuestion(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'id_question' => 'required',
-            'id_question_query' => 'required',
-            'title' => 'required',
-            'description' => 'required',
-            'answer_correct' => 'required',
-            'level_question' => 'required',
-            'number_question' => 'required',
-            'slug' => 'required',
-            'answers'=>'required | array | min:2',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 200);
-        }
-        $question = new Question();
-        $question->id_question = $request->id_question;
-        $question->id_question_query = $request->id_question_query;
-        $question->title = $request->title;
-        $question->description = $request->description;
-        $question->answer_correct = $request->answer_correct;
-        $question->level_question = $request->level_question;
-        $question->number_question = $request->number_question;
-        $question->slug = $request->slug;
-        
-        if ($request->hasFile('image_question')) {
-            $newNameImage = time() . uniqid() . $request->id_question . '.' . $request->image_question->getClientOriginalExtension();
-            $image = new Image();
-            $image->id_image = time() . uniqid().$request->id_question;
-            $image->id_query_image = $request->id_question;
-            $image->url_image = $newNameImage;
-            $isSaveImage = $image->save();
-            if(!$isSaveImage){
-                return response()->json([
-                    'status' => false,
-                    'message' => 'create image fail',
-                    'data' => [
-                        'question' => null,
-                    ]
-                ], 200);
-            }
-            $request->image_question->move(public_path('images'), $newNameImage);
-        }
-        $isSuccess = $question->save();
-        if (!$isSuccess) {
+public function createQuestion(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'id_question' => 'required',
+        'id_question_query' => 'required',
+        'title' => 'required',
+        'description' => 'required',
+        'answer_correct' => 'required',
+        'level_question' => 'required',
+        'number_question' => 'required',
+        'slug' => 'required',
+        'answers' => 'required|array|min:2',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 200);
+    }
+
+    $question = new Question();
+    $question->id_question = $request->id_question;
+    $question->id_question_query = $request->id_question_query;
+    $question->title = $request->title;
+    $question->description = $request->description;
+    $question->answer_correct = $request->answer_correct;
+    $question->level_question = $request->level_question;
+    $question->number_question = $request->number_question;
+    $question->slug = $request->slug;
+
+    if ($request->hasFile('image_question')) {
+        $newNameImage = time() . uniqid() . $request->id_question . '.' . $request->image_question->getClientOriginalExtension();
+        $image = new Image();
+        $image->id_image = time() . uniqid() . $request->id_question;
+        $image->id_query_image = $request->id_question;
+        $image->url_image = $newNameImage;
+        $isSaveImage = $image->save();
+        if (!$isSaveImage) {
             return response()->json([
                 'status' => false,
-                'message' => 'create question fail',
+                'message' => 'create image fail',
                 'data' => [
                     'question' => null,
                 ]
             ], 200);
         }
+        $request->image_question->move(public_path('images'), $newNameImage);
+    }
 
-        foreach ($request->answers as $answer) {
-            $answerDb = new Answer();
-            $answerDb->id_answer = time() . uniqid().$answer["id_answer"];
-            $answerDb->question_id = $question->id;
-            $answerDb->answer_text =$answer["answer_text"];
-            $answerDb->slug =$answer["answer_text"];
-            $isSuccess = $answerDb->save();
-            
-            if (!$isSuccess) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'create answer fail',
-                    'data' => [
-                        'question' => null,
-                    ]
-                ], 200);
-            }
+    $isSuccess = $question->save();
+    if (!$isSuccess) {
         return response()->json([
-            'status' => true,
-            'message' => 'create question success',
+            'status' => false,
+            'message' => 'create question fail',
             'data' => [
-                'question' => $question,
+                'question' => null,
             ]
         ], 200);
     }
+
+    // Lưu các câu trả lời liên quan
+    foreach ($request->answers as $answer) {
+        $answerDb = new Answer();
+        $answerDb->id_answer = time() . uniqid() . $answer["id_answer"];
+        $answerDb->question_id = $question->id;
+        $answerDb->answer_text = $answer["answer_text"];
+        $answerDb->slug = time() . uniqid() . $answer["id_answer"];
+        $isSuccess = $answerDb->save();
+
+        if (!$isSuccess) {
+            return response()->json([
+                'status' => false,
+                'message' => 'create answer fail',
+                'data' => [
+                    'question' => null,
+                ]
+            ], 200);
+        }
+    }
+
+    $questionWithAnswers = Question::with('answers')
+        ->where('id_question', $question->id_question)
+        ->first();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'create question success',
+        'data' => [
+            'question' => $questionWithAnswers,
+        ]
+    ], 200);
 }
+
 
 public function updateQuestion(Request $request)
 {
@@ -189,7 +199,7 @@ public function updateQuestion(Request $request)
                 // Cập nhật câu trả lời
                 $answer->answer_text = $answerData['answer_text'] ?? $answer->answer_text;
                 $answer->save();
-                
+
                 // Nếu id_answer trùng với answer_correct mới, cập nhật trường answer_correct
                 if ($request->answer_correct == $answer->id_answer) {
                     $question->answer_correct = $answer->id_answer;
