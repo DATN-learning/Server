@@ -92,7 +92,7 @@ public function createQuestion(Request $request)
     $question->id_question_query = $request->id_question_query;
     $question->title = $request->title;
     $question->description = $request->description;
-    $question->answer_correct = $request->answer_correct;
+    $question->answer_correct = uniqid() .$request->answer_correct;
     $question->level_question = $request->level_question;
     $question->number_question = $request->number_question;
     $question->slug = $request->slug;
@@ -130,10 +130,10 @@ public function createQuestion(Request $request)
     // Lưu các câu trả lời liên quan
     foreach ($request->answers as $answer) {
         $answerDb = new Answer();
-        $answerDb->id_answer = time() . uniqid() . $answer["id_answer"];
+        $answerDb->id_answer = uniqid() .$answer["id_answer"];
         $answerDb->question_id = $question->id;
         $answerDb->answer_text = $answer["answer_text"];
-        $answerDb->slug = time() . uniqid() . $answer["id_answer"];
+        $answerDb->slug = uniqid() . $answer["id_answer"];
         $isSuccess = $answerDb->save();
 
         if (!$isSuccess) {
@@ -215,8 +215,6 @@ public function updateQuestion(Request $request)
         'message' => 'Question and answers updated successfully',
     ], 200);
 }
-
-
 
     public function deleteQuestion(Request $request)
     {

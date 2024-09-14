@@ -128,7 +128,7 @@ class ChapterController extends Controller
             return response()->json(['error' => $validator->errors()], 401);
         }
         $chapter = new ChapterSubject();
-        $chapter->id_chapter_subject = $request->id_chapter_subject . uniqid();
+        $chapter->id_chapter_subject = $request->id_chapter_subject;
         $chapter->subject_id = $request->subject_id;
         $chapter->name_chapter_subject = $request->name_chapter_subject;
         $chapter->slug = $request->slug;
