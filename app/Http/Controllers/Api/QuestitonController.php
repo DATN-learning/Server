@@ -70,129 +70,108 @@ class QuestitonController extends Controller
     }
 
     public function createQuestion(Request $request)
-    {
-        // Validate dữ liệu request
-        $validator = Validator::make($request->all(), [
-            'id_question' => 'required',
-            'id_question_query' => 'required',
-            'title' => 'required',
-            'description' => 'required',
-            'answer_correct' => 'required', // Chứa id của câu trả lời đúng
-            'level_question' => 'required',
-            'number_question' => 'required',
-            'slug' => 'required',
-            'answers' => 'required|array|min:2', // Ít nhất 2 câu trả lời
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 200);
-        }
-    
-        // Tạo mới question
-        $question = new Question();
-        $question->id_question = $request->id_question;
-        $question->id_question_query = $request->id_question_query;
-        $question->title = $request->title;
-        $question->description = $request->description;
-        $question->level_question = $request->level_question;
-        $question->number_question = $request->number_question;
-        $question->slug = $request->slug;
-    
-        // Xử lý hình ảnh nếu có
-        if ($request->hasFile('image_question')) {
-            $newNameImage = time() . uniqid() . $request->id_question . '.' . $request->image_question->getClientOriginalExtension();
-            $image = new Image();
-            $image->id_image = time() . uniqid() . $request->id_question;
-            $image->id_query_image = $request->id_question;
-            $image->url_image = $newNameImage;
-            $isSaveImage = $image->save();
-            if (!$isSaveImage) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'create image fail',
-                    'data' => [
-                        'question' => null,
-                    ]
-                ], 200);
+        {
+            $validator = Validator::make($request->all(), [
+                'id_question' => 'required',
+                'id_question_query' => 'required',
+                'title' => 'required',
+                'description' => 'required',
+                'answer_correct' => 'required',
+                'level_question' => 'required',
+                'number_question' => 'required',
+                'slug' => 'required',
+                'answers' => 'required|array|min:2',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 200);
             }
-            $request->image_question->move(public_path('images'), $newNameImage);
-        }
-    
-        // Lưu question trước
-        $isSuccess = $question->save();
-        if (!$isSuccess) {
-            return response()->json([
-                'status' => false,
-                'message' => 'create question fail',
-                'data' => [
-                    'question' => null,
-                ]
-            ], 200);
-        }
-    
-        // Lưu các câu trả lời
-        $answerCorrectId = null;
-        foreach ($request->answers as $answer) {
-            $answerDb = new Answer();
-            $answerDb->id_answer = uniqid() . $answer["id_answer"];
-            $answerDb->question_id = $question->id;
-            $answerDb->answer_text = $answer["answer_text"];
-            $answerDb->slug = uniqid() . $answer["id_answer"];
-            $isSuccess = $answerDb->save();
-    
-            // Kiểm tra xem id_answer nào là câu trả lời đúng
-            if ($answer["id_answer"] == $request->answer_correct) {
-                $answerCorrectId = $answerDb->id_answer; // Gán id_answer của câu trả lời đúng
+
+            $question = new Question();
+            $question->id_question = $request->id_question;
+            $question->id_question_query = $request->id_question_query;
+            $question->title = $request->title;
+            $question->description = $request->description;
+            $question->answer_correct = time() .$request->answer_correct;
+            $question->level_question = $request->level_question;
+            $question->number_question = $request->number_question;
+            $question->slug = $request->slug;
+
+            if ($request->hasFile('image_question')) {
+                $newNameImage = time() . uniqid() . $request->id_question . '.' . $request->image_question->getClientOriginalExtension();
+                $image = new Image();
+                $image->id_image = time() . uniqid() . $request->id_question;
+                $image->id_query_image = $request->id_question;
+                $image->url_image = $newNameImage;
+                $isSaveImage = $image->save();
+                if (!$isSaveImage) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'create image fail',
+                        'data' => [
+                            'question' => null,
+                        ]
+                    ], 200);
+                }
+                $request->image_question->move(public_path('images'), $newNameImage);
             }
-    
+
+            $isSuccess = $question->save();
             if (!$isSuccess) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'create answer fail',
+                    'message' => 'create question fail',
                     'data' => [
                         'question' => null,
                     ]
                 ], 200);
             }
-        }
-    
-        // Cập nhật answer_correct cho question bằng id_answer của câu trả lời đúng
-        $question->answer_correct = $answerCorrectId;
-        $question->save();
-    
-        // Lấy question cùng các câu trả lời liên quan
-        $questionWithAnswers = Question::with('answers')
-            ->where('id_question', $question->id_question)
-            ->first();
-    
-        return response()->json([
-            'status' => true,
-            'message' => 'create question success',
-            'data' => [
-                'question' => $questionWithAnswers,
-            ]
-        ], 200);
-    }
+
+            foreach ($request->answers as $answer) {
+                $answerDb = new Answer();
+                $answerDb->id_answer =  time() .$answer["id_answer"];
+                $answerDb->question_id = $question->id;
+                $answerDb->answer_text = $answer["answer_text"];
+                $answerDb->slug =  time() .$answer["id_answer"];
+                $isSuccess = $answerDb->save();
+
+                if (!$isSuccess) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'create answer fail',
+                        'data' => [
+                            'question' => null,
+                        ]
+                    ], 200);
+                }
+            }
+
+            $questionWithAnswers = Question::with('answers')
+                ->where('id_question', $question->id_question)
+                ->first();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'create question success',
+                'data' => [
+                    'question' => $questionWithAnswers,
+                ]
+            ], 200);
+}
     
     public function updateQuestion(Request $request)
 {
     // Validate dữ liệu request
     $validator = Validator::make($request->all(), [
         'id_question' => 'required',
-        'id_question_query' => 'required',
-        'title' => 'required',
-        'description' => 'required',
-        'answer_correct' => 'required', // Chứa id của câu trả lời đúng
-        'level_question' => 'required',
-        'number_question' => 'required',
-        'answers' => 'required|array|min:2', // Ít nhất 2 câu trả lời
+        
+        'answers' => 'required|array|min:2', 
     ]);
 
     if ($validator->fails()) {
         return response()->json(['error' => $validator->errors()], 200);
     }
 
-    // Tìm question cần cập nhật
     $question = Question::where('id_question', $request->id_question)->first();
     if (!$question) {
         return response()->json([
