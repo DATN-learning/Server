@@ -98,9 +98,9 @@ class QuestitonController extends Controller
             $question->slug = $request->slug;
 
             if ($request->hasFile('image_question')) {
-                $newNameImage = time() . uniqid() . $request->id_question . '.' . $request->image_question->getClientOriginalExtension();
+                $newNameImage = time() .$request->id_question . '.' . $request->image_question->getClientOriginalExtension();
                 $image = new Image();
-                $image->id_image = time() . uniqid() . $request->id_question;
+                $image->id_image = time() . $request->id_question;
                 $image->id_query_image = $request->id_question;
                 $image->url_image = $newNameImage;
                 $isSaveImage = $image->save();
@@ -158,14 +158,13 @@ class QuestitonController extends Controller
                 ]
             ], 200);
 }
-    
+
     public function updateQuestion(Request $request)
 {
     // Validate dữ liệu request
     $validator = Validator::make($request->all(), [
         'id_question' => 'required',
-        
-        'answers' => 'required|array|min:2', 
+        'answers' => 'required|array',
     ]);
 
     if ($validator->fails()) {
@@ -187,6 +186,7 @@ class QuestitonController extends Controller
     $question->description = $request->description;
     $question->level_question = $request->level_question;
     $question->number_question = $request->number_question;
+    $question->slug = $request->slug;
 
     // Kiểm tra xem answer_correct có nằm trong danh sách các câu trả lời không
     $answerCorrectId = null;
@@ -218,10 +218,10 @@ class QuestitonController extends Controller
         } else {
             // Thêm câu trả lời mới nếu chưa tồn tại
             $newAnswer = new Answer();
-            $newAnswer->id_answer = uniqid() . $answer['id_answer'];
+            $newAnswer->id_answer = time() .$answer['id_answer'];
             $newAnswer->question_id = $question->id;
             $newAnswer->answer_text = $answer['answer_text'];
-            $newAnswer->slug = uniqid() . $answer['id_answer'];
+            $newAnswer->slug = time() .$answer['id_answer'];
             $newAnswer->save();
         }
     }
@@ -254,8 +254,6 @@ class QuestitonController extends Controller
     ], 200);
 }
 
-
-    
 
     public function deleteQuestion(Request $request)
     {
