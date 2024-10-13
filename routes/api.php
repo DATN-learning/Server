@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\LesstionController;
 use App\Http\Controllers\Api\QuestitonController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TokenNotificationController;
-use App\Http\Controllers\Api\ChatGptController;
+use App\Http\Controllers\Api\ChatBotController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +34,8 @@ Route::post('/auth/checktoken', [AuthController::class, 'loginByToken'])->name('
 Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('auth:sanctum');
 Route::post('/auth/logoutall', [AuthController::class, 'logoutAll'])->name('auth.logoutall');
 Route::get('/auth/getprofile', [AuthController::class, 'getProfile'])->name('auth.getProfile')->middleware('auth:sanctum');
+Route::get('/auth/getAllUsers', [AuthController::class, 'getAllUsers'])->name('auth.getAllUsers')->middleware('auth:sanctum');
+Route::post('/auth/deleteUserByProfileId', [AuthController::class, 'deleteUserByProfileId'])->name('auth.deleteUserByProfileId')->middleware('auth:sanctum');
 Route::post('/auth/updateprofile', [AuthController::class, 'updateProfile'])->name('auth.updateProfile')->middleware('auth:sanctum');
 //class
 Route::get('/classroom', [ClassController::class, 'index'])->name('classroom.index');
@@ -74,4 +76,5 @@ Route::post('/manapost/createCommentPost', [PostController::class, 'createCommen
 // token notification
 Route::post('/tokennotification', [TokenNotificationController::class, 'createTokenDevice'])->name('tokennotification.store');
 // chatgpt
-Route::get('/chatgpt/ask', [ChatGptController::class, 'ask'])->name('chatgpt.ask');
+// Route::get('/chatgpt/ask', [ChatGptController::class, 'ask'])->name('chatgpt.ask');
+Route::post('/chat', [ChatBotController::class, 'chat'])->name('chat.chat');

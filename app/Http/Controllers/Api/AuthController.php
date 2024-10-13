@@ -81,7 +81,7 @@ class AuthController extends Controller
     }
 
     public function getProfile(Request $request){
-        $user = User::with('profile')->find($request->user()->id); 
+        $user = User::with('profile')->find($request->user()->id);
 
         if ($user && $user->profile) {
             return response()->json([
@@ -94,69 +94,148 @@ class AuthController extends Controller
         }
     }
 
+    public function getAllUsers(Request $request)
+    {
+        try {
+            // Lấy tất cả người dùng cùng với profile của họ
+            $users = User::with('profile')->get(); // Dùng `get()` để trả về collection (mảng các đối tượng)
+
+            if ($users->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'No users found',
+                    'data' => [] // Trả về mảng rỗng nếu không có người dùng
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Users fetched successfully',
+                'data' => $users // Trả về mảng người dùng
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 400);
+        }
+    }
+
     public function updateProfile(Request $request)
-{
-    // Xác thực dữ liệu đầu vào
-    $validateUser = Validator::make(
-        $request->all(),
-        [
-            'first_name' => 'nullable|string|max:255',
-            'last_name' => 'nullable|string|max:255',
-            'nick_name' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'date_of_birth' => 'nullable|date',
-            'class_name' => 'nullable|string|max:255',
-            'school_name' => 'nullable|string|max:255',
-            'hashtag' => 'nullable|string|max:255',
-        ]
-    );
+    {
+        // Xác thực dữ liệu đầu vào
+        $validateUser = Validator::make(
+            $request->all(),
+            [
+                'first_name' => 'nullable|string|max:255',
+                'last_name' => 'nullable|string|max:255',
+                'nick_name' => 'nullable|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'date_of_birth' => 'nullable|date',
+                'class_name' => 'nullable|string|max:255',
+                'school_name' => 'nullable|string|max:255',
+                'hashtag' => 'nullable|string|max:255',
+            ]
+        );
 
-    if ($validateUser->fails()) {
+        if ($validateUser->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validateUser->errors(),
+            ], 400);
+        }
+
+        // Lấy người dùng hiện tại
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Cập nhật thông tin cơ bản của người dùng
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->save();
+
+        // Cập nhật thông tin profile của người dùng
+        $profile = ProfileUser::where('user_id', $user->id)->first();
+
+        if ($profile) {
+            $profile->nick_name = $request->nick_name ?? $profile->nick_name;
+            $profile->address = $request->address ?? $profile->address;
+            $profile->date_of_birth = $request->date_of_birth ?? $profile->date_of_birth;
+            $profile->class_name = $request->class_name ?? $profile->class_name;
+            $profile->school_name = $request->school_name ?? $profile->school_name;
+            $profile->hashtag = $request->hashtag ?? $profile->hashtag;
+            $profile->save();
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Profile not found',
+            ], 404);
+        }
+
         return response()->json([
-            'message' => 'Validation error',
-            'errors' => $validateUser->errors(),
-        ], 400);
+            'status' => true,
+            'message' => 'Profile updated successfully',
+        ], 200);
     }
 
-    // Lấy người dùng hiện tại
-    $user = $request->user();
+    public function deleteUserByProfileId(Request $request)
+    {
+        // Xác thực rằng người dùng đã đăng nhập
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
 
-    if (!$user) {
-        return response()->json([
-            'message' => 'User not found',
-        ], 404);
+        // Lấy id_profile từ yêu cầu
+        $idProfile = $request->input('id_profile');
+
+        try {
+            // Tìm người dùng dựa trên id_profile
+            $profile = ProfileUser::where('id_profile', $idProfile)->first();
+
+            if (!$profile) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Profile not found',
+                ], 404);
+            }
+
+            // Xóa người dùng và profile tương ứng
+            $userToDelete = User::find($profile->user_id);
+
+            if ($userToDelete) {
+                // Xóa profile trước
+                $profile->delete();
+
+                // Xóa người dùng
+                $userToDelete->delete();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'User deleted successfully',
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
     }
 
-    // Cập nhật thông tin cơ bản của người dùng
-    $user->first_name = $request->first_name;
-    $user->last_name = $request->last_name;
-    $user->save();
-
-    // Cập nhật thông tin profile của người dùng
-    $profile = ProfileUser::where('user_id', $user->id)->first();
-
-    if ($profile) {
-        $profile->nick_name = $request->nick_name ?? $profile->nick_name;
-        $profile->address = $request->address ?? $profile->address;
-        $profile->date_of_birth = $request->date_of_birth ?? $profile->date_of_birth;
-        $profile->class_name = $request->class_name ?? $profile->class_name;
-        $profile->school_name = $request->school_name ?? $profile->school_name;
-        $profile->hashtag = $request->hashtag ?? $profile->hashtag;
-        $profile->save();
-    } else {
-        return response()->json([
-            'status' => false,
-            'message' => 'Profile not found',
-        ], 404);
-    }
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Profile updated successfully',
-    ], 200);
-}
-
-    
 
 
     public function login(Request $request)
@@ -262,7 +341,7 @@ class AuthController extends Controller
         try {
             //code...
             $tokendata = $request->bearerToken();
-            // config token 
+            // config token
             $tokenfind = PersonalAccessToken::findToken($tokendata)->token;
             $token = TokenAccess::where('token', $tokenfind)->first();
             if (!$token) {

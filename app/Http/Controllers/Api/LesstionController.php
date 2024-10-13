@@ -125,16 +125,15 @@ class LesstionController extends Controller
 
     public function updateLession(Request $request){
         $validator = Validator::make($request->all(), [
-            
-            'id_lession_chapter' => 'required|exists:lesstion_chapters,id_lession_chapter', 
+            'id_lesstion_chapter' => 'required|exists:lesstion_chapters,id_lesstion_chapter',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 401);
         }
-        $lession = LesstionChapter::where('id_lession_chapter', $request->id_lession_chapter)->first();
+        $lession = LesstionChapter::where('id_lesstion_chapter', $request->id_lesstion_chapter)->first();
         if (empty($lession)) {
             return response()->json([
-                'message' => 'lession not found'
+                'message' => 'lesstion not found'
             ], 200);
         }
         $lession->name_lesstion_chapter = $request->name_lesstion_chapter;
@@ -155,7 +154,7 @@ class LesstionController extends Controller
     public function deleteLession(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id_lesstion_chapter' => 'required',
+            'id_lesstion_chapter' => 'required|string',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 401);
@@ -170,12 +169,12 @@ class LesstionController extends Controller
         if ($check) {
             return response()->json([
                 'message' => 'delete lession success'
-                
+
             ], 200);
         } else {
             return response()->json([
                 'message' => 'delete lession fail'
-            ], 200);
+            ], 400);
         }
     }
 
@@ -216,7 +215,7 @@ class LesstionController extends Controller
             ], 200);
         }
     }
-    
+
     /**
      * Show the form for creating a new resource.
      */
