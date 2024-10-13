@@ -468,4 +468,142 @@ class PostController extends Controller
             ], 200);
         }
     }
+    
+    public function updateCommentPost(Request $request)
+    {
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'comment_id' => 'required',
+            'title_comment' => 'required',
+            'description_comment' => 'required',
+            'image' => 'nullable|file|mimes:jpeg,jpg,png,gif|max:2048' // Validate image input if any
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validate error',
+                'error' => $validator->errors()
+            ], 200);
+        }
+
+        // Get the comment by ID
+        $comment = CommentPost::where('comment_id', $request->comment_id)->first();
+
+        if ($comment) {
+            // Update comment title and body
+            $comment->title = $request->title_comment;
+            $comment->body = $request->description_comment;
+            $isUpdateComment = $comment->save();
+
+            // Xử lý phần cập nhật ảnh nếu có
+            if ($request->hasFile('image')) {
+                // Xóa ảnh cũ liên quan đến comment này
+                $oldImages = Image::where('id_query_image', $comment->comment_id)->get();
+                foreach ($oldImages as $oldImage) {
+                    // Xóa file ảnh từ thư mục public nếu có
+                    $oldImagePath = public_path() . '/images/' . $oldImage->url_image;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath); // Xóa file ảnh cũ
+                    }
+                    $oldImage->delete(); // Xóa thông tin ảnh cũ trong database
+                }
+
+                // Thêm ảnh mới
+                $imageFile = $request->file('image');
+                $imageName = uniqid() . '_' . $imageFile->getClientOriginalName();
+                $imageFile->move(public_path('/images/'), $imageName);
+
+                // Lưu thông tin hình ảnh mới vào database
+                $newImage = new Image();
+                $newImage->id_image = 'comment' . $comment->comment_id . uniqid() . 'image';
+                $newImage->url_image = $imageName;
+                $newImage->id_query_image = $comment->comment_id;
+                $isCreateImageComment = $newImage->save();
+
+                if (!$isCreateImageComment) {
+                    // Xóa comment nếu lưu hình ảnh mới thất bại
+                    $comment->delete();
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'update comment fail during image processing',
+                    ], 200);
+                }
+            }
+
+            // Trả về kết quả sau khi cập nhật
+            if ($isUpdateComment) {
+                // Lấy tất cả hình ảnh mới và các thông tin khác của comment
+                $comment->images = Image::where('id_query_image', $comment->comment_id)->get();
+                foreach ($comment->images as $image) {
+                    $image->url_image = url('/images/' . $image->url_image);
+                }
+
+                // Thông tin thời gian tạo và người tạo comment
+                $comment->timeAgo = $comment->updated_at->diffForHumans();
+                $comment->userCreate;
+                $comment->userCreate->avatar = url('/images/' . $comment->userCreate->profile->id_image);
+                unset($comment->userCreate->profile);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'update comment success',
+                    'data' => $comment
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'update comment fail',
+                ], 200);
+            }
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'comment not found',
+            ], 200);
+        }
+    }
+
+
+    public function deleteCommentPost(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'comment_id' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validate error',
+                'error' => $validator->errors()
+            ], 200);
+        }
+        $comment = CommentPost::where('comment_id', $request->comment_id)->first();
+        if ($comment) {
+            $images = Image::where('id_query_image', $comment->comment_id)->get();
+            foreach ($images as $image) {
+                $imagePath = public_path('/images/') . $image->url_image;
+                if (file_exists($imagePath)) {
+                    unlink($imagePath); // Xóa file ảnh từ thư mục
+                }
+                $image->delete(); // Xóa bản ghi ảnh trong cơ sở dữ liệu
+            }
+            $isDelete = $comment->delete();
+            if ($isDelete) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'delete comment success',
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'delete comment fail',
+                ], 200);
+            }
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'comment not found',
+            ], 200);
+        }
+    }
 }

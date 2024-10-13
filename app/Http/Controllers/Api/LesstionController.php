@@ -216,6 +216,73 @@ class LesstionController extends Controller
         }
     }
 
+    public function deleteSlideLession(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_pdf' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+        $pdf = PdfFile::where('id_pdf', $request->id_pdf)->first();
+        if (empty($pdf)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'pdf not found',
+                'data' => [
+                    'pdf' => null,
+                ]
+            ], 200);
+        }
+        $check = $pdf->delete();
+        if ($check) {
+            return response()->json([
+                'status' => true,
+                'message' => 'delete pdf success',
+                'data' => [
+                    'pdf' => $pdf,
+                ]
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'delete pdf fail',
+                'data' => [
+                    'pdf' => null,
+                ]
+            ], 200);
+        }
+    }
+
+    public function getSlideLession(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_lesstion_chapter' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+        $pdfs = PdfFile::where('id_query_pdf', $request->id_lesstion_chapter)->get();
+        if (empty($pdfs)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'pdf not found',
+                'data' => [
+                    'pdfs' => null,
+                ]
+            ], 200);
+        }
+        foreach ($pdfs as $pdf) {
+            $pdf->pdf_file = asset('pdfs/' . $pdf->url_pdf);
+        }
+        return response()->json([
+            'status' => true,
+            'message' => 'pdf found',
+            'data' => [
+                'pdfs' => $pdfs,
+            ]
+        ], 200);
+    }
     /**
      * Show the form for creating a new resource.
      */
