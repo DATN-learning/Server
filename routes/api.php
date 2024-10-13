@@ -55,6 +55,8 @@ Route::post('/classroom/deleteChapterByID', [ChapterController::class, 'deleteCh
 Route::post('/classroom/getLessionById', [LesstionController::class, 'getLessionByID'])->name('classroom.getSubjectChapterLession')->middleware('auth:sanctum');
 Route::post('/classroom/createLession', [LesstionController::class, 'createLession'])->name('classroom.createLession')->middleware('auth:sanctum');
 Route::post('/classroom/addSlideLession', [LesstionController::class, 'addSlideLession'])->name('classroom.addSlideLession')->middleware('auth:sanctum');
+Route::post('/classroom/deleteSlideLession', [LesstionController::class, 'deleteSlideLession'])->name('classroom.deleteSlideLession')->middleware('auth:sanctum');
+Route::post('/classroom/getSlideLession', [LesstionController::class, 'getSlideLession'])->name('classroom.getSlideLession')->middleware('auth:sanctum');
 Route::post('/classroom/deleteLession', [LesstionController::class, 'deleteLession'])->name('classroom.deleteLession')->middleware('auth:sanctum');
 Route::post('/classroom/updateLession', [LesstionController::class, 'updateLession'])->name('classroom.updateLession')->middleware('auth:sanctum');
 // ?chapter exercise
@@ -66,11 +68,15 @@ Route::post('/question/updateQuestion', [QuestitonController::class, 'updateQues
 Route::post('/question/deleteQuestion', [QuestitonController::class, 'deleteQuestion'])->name('question.deleteQuestion')->middleware('auth:sanctum');
 //posts
 Route::post('/manapost/createPostQuestion', [PostController::class, 'createPostQuestion'])->name('manapost.createPostQuestion')->middleware('auth:sanctum');
+Route::post('/manapost/updatePostQuestion', [PostController::class, 'updatePostQuestion'])->name('manapost.updatePostQuestion')->middleware('auth:sanctum');
+Route::post('/manapost/deletePostQuestion', [PostController::class, 'deletePostQuestion'])->name('manapost.deletePostQuestion')->middleware('auth:sanctum');
 Route::get('/manapost/getPostQuestion', [PostController::class, 'getPostQuestion'])->name('manapost.getPostQuestion');
 Route::post('/manapost/getPostQuestionByLable', [PostController::class, 'getPostQuestionByLable'])->name('manapost.getPostQuestionByLable')->middleware('auth:sanctum');
 Route::post('/manapost/getPostQuestionById', [PostController::class, 'getPostQuestionById'])->name('manapost.getPostQuestionById')->middleware('auth:sanctum');
 Route::get('/manapost/getCommentPost', [PostController::class, 'getCommentPost'])->name('manapost.getCommentPost')->middleware('auth:sanctum');
 Route::post('/manapost/createCommentPost', [PostController::class, 'createCommentPost'])->name('manapost.createCommentPost')->middleware('auth:sanctum');
+Route::post('/manapost/updateCommentPost', [PostController::class, 'updateCommentPost'])->name('manapost.updateCommentPost')->middleware('auth:sanctum');
+Route::post('/manapost/deleteCommentPost', [PostController::class, 'deleteCommentPost'])->name('manapost.deleteCommentPost')->middleware('auth:sanctum');
 // token notification
 Route::post('/tokennotification', [TokenNotificationController::class, 'createTokenDevice'])->name('tokennotification.store');
 // chatgpt
