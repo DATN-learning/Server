@@ -9,7 +9,7 @@ class CommentPost extends Model
 {
     use HasFactory;
     protected $table = 'comment_posts';
-    protected $primaryKey = 'post_id';
+    protected $primaryKey = 'comment_id';
     protected $fillable = [
         'comment_id',
         'user_id',
