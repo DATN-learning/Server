@@ -468,7 +468,6 @@ class PostController extends Controller
             ], 200);
         }
     }
-    
     public function updateCommentPost(Request $request)
     {
         // Validate input
