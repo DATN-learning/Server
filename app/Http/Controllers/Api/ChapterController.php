@@ -162,49 +162,59 @@ class ChapterController extends Controller
             'id_chapter_subject' => 'required',
             'name_chapter_subject' => 'required',
             'chapter_image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:20408',
-            'number_chapter' => 'required',
+            'number_chapter' => 'required|integer',
         ]);
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 200);
         }
+
+        // Find the chapter by its id
         $chapter = ChapterSubject::where('id_chapter_subject', $request->id_chapter_subject)->first();
+
         if (empty($chapter)) {
             return response()->json([
                 'status' => false,
-                'message' => 'chapter not found',
-                'data' => [
-                    'chapter' => null,
-                ]
+                'message' => 'Chapter not found',
+                'data' => ['chapter' => null],
             ], 200);
         }
+
+        $idParts = explode('-', $request->id_chapter_subject);
+        array_pop($idParts);
+        $idParts[] = $request->number_chapter;
+
+        $newChapterSubject = implode('-', $idParts);
+        // $newChapterSubject = $request->id_chapter_subject . '-' . $request->number_chapter;
+        $chapter->id_chapter_subject = $newChapterSubject;
         $chapter->name_chapter_subject = $request->name_chapter_subject;
         $chapter->number_chapter = $request->number_chapter;
+
         if ($request->hasFile('chapter_image')) {
-            // remove old image
-            $oldImage = public_path('images/' . $chapter->chapter_image);
-            if (file_exists($oldImage)) {
-                unlink($oldImage);
+            $oldImagePath = public_path('images/' . $chapter->chapter_image);
+            if (file_exists($oldImagePath) && !empty($chapter->chapter_image)) {
+                unlink($oldImagePath);
             }
-            $newNameImage = time() . uniqid() . $request->id_chapter_subject . '.' . $request->chapter_image->getClientOriginalExtension();
+
+            $newNameImage = time() . uniqid() . '.' . $request->chapter_image->getClientOriginalExtension();
             $chapter->chapter_image = $newNameImage;
+
             $request->chapter_image->move(public_path('images'), $newNameImage);
         }
+
         $check = $chapter->save();
+
         if ($check) {
             return response()->json([
                 'status' => true,
-                'message' => 'edit chapter success',
-                'data' => [
-                    'chapter' => $chapter,
-                ]
+                'message' => 'Edit chapter success',
+                'data' => ['chapter' => $chapter],
             ], 200);
         } else {
             return response()->json([
                 'status' => false,
-                'message' => 'edit chapter fail',
-                'data' => [
-                    'chapter' => null,
-                ]
+                'message' => 'Edit chapter failed',
+                'data' => ['chapter' => null],
             ], 200);
         }
     }
