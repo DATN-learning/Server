@@ -212,18 +212,9 @@ class QuestitonController extends Controller
             ->first();
 
         if ($answerDb) {
-            // Cập nhật câu trả lời hiện có
             $answerDb->answer_text = $answer['answer_text'];
             $answerDb->save();
-        } else {
-            // Thêm câu trả lời mới nếu chưa tồn tại
-            $newAnswer = new Answer();
-            $newAnswer->id_answer = time() .$answer['id_answer'];
-            $newAnswer->question_id = $question->id;
-            $newAnswer->answer_text = $answer['answer_text'];
-            $newAnswer->slug = time() .$answer['id_answer'];
-            $newAnswer->save();
-        }
+        } 
     }
 
     // Cập nhật answer_correct cho question
