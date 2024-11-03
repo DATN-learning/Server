@@ -40,38 +40,52 @@ class RatingController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'create rating success',
-            'data' => $rating
+            'data' => [
+                'rating' => $rating
+            ]
         ], 200);
 
     }
+    public function getAllRating()
+    {
+        $ratings = Rating::with(['userCreate', 'lesstionChapter'])->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Get all ratings success',
+            'data' => [
+                'rating' => $ratings
+            ]
+        ], 200);
+    }
+
     public function getRatingByLessionChapterId(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'lesstion_chapter_id' => 'required',
         ]);
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'validate error',
+                'message' => 'Validation error',
                 'error' => $validator->errors()
             ], 200);
         }
-        $rating = Rating::where('lesstion_chapter_id', $request->lesstion_chapter_id)->get();
+
+        $ratings = Rating::with(['userCreate', 'lesstionChapter'])
+                    ->where('lesstion_chapter_id', $request->lesstion_chapter_id)
+                    ->get();
+
         return response()->json([
             'status' => true,
-            'message' => 'get rating success',
-            'data' => $rating
+            'message' => 'Get rating success',
+            'data' => [
+                'rating' => $ratings
+            ]
         ], 200);
     }
-    public function getAllRating()
-    {
-        $rating = Rating::all();
-        return response()->json([
-            'status' => true,
-            'message' => 'get all rating success',
-            'data' => $rating
-        ], 200);
-    }
+
     public function updateRating(Request $request)
     {
         $validator = Validator::make($request->all(), [
