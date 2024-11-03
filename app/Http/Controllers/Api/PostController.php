@@ -541,7 +541,7 @@ class PostController extends Controller
                 // Thông tin thời gian tạo và người tạo comment
                 $comment->timeAgo = $comment->updated_at->diffForHumans();
                 $comment->userCreate;
-                $comment->userCreate->avatar = url('/images/' . $comment->userCreate->profile->id_image);
+                // $comment->userCreate->avatar = url('/images/' . $comment->userCreate->profile->id_image);
                 unset($comment->userCreate->profile);
 
                 return response()->json([
