@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\QuestitonController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TokenNotificationController;
 use App\Http\Controllers\Api\ChatBotController;
+use App\Http\Controllers\Api\RatingController;
+use App\Http\Controllers\Api\ViewController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -82,3 +84,13 @@ Route::post('/tokennotification', [TokenNotificationController::class, 'createTo
 // chatgpt
 // Route::get('/chatgpt/ask', [ChatGptController::class, 'ask'])->name('chatgpt.ask');
 Route::post('/chat', [ChatBotController::class, 'chat'])->name('chat.chat');
+
+//Rating
+Route::post('/rating/createRating', [RatingController::class, 'createRating'])->name('rating.createRating')->middleware('auth:sanctum');
+Route::post('/rating/getRatingByLessionChapterId', [RatingController::class, 'getRatingByLessionChapterId'])->name('rating.getRatingByLessionChapterId')->middleware('auth:sanctum');
+Route::post('/rating/getAllRating', [RatingController::class, 'getAllRating'])->name('rating.getAllRating')->middleware('auth:sanctum');
+Route::post('/rating/updateRating', [RatingController::class, 'updateRating'])->name('rating.updateRating')->middleware('auth:sanctum');
+Route::post('/rating/deleteRating', [RatingController::class, 'deleteRating'])->name('rating.deleteRating')->middleware('auth:sanctum');
+
+//View
+Route::post('view/startView', [ViewController::class, 'startView'])->name('view.startView')->middleware('auth:sanctum');
