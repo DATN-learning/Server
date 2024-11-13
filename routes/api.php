@@ -68,6 +68,7 @@ Route::post('/question/getQuestionByIDQR', [QuestitonController::class, 'getQues
 Route::post('/question/createQuestion', [QuestitonController::class, 'createQuestion'])->name('question.createQuestion')->middleware('auth:sanctum');
 Route::post('/question/updateQuestion', [QuestitonController::class, 'updateQuestion'])->name('question.updateQuestion')->middleware('auth:sanctum');
 Route::post('/question/deleteQuestion', [QuestitonController::class, 'deleteQuestion'])->name('question.deleteQuestion')->middleware('auth:sanctum');
+Route::post('/question/submitedChapterAnswer', [QuestitonController::class, 'submitedChapterAnswer'])->name('question.submitedChapterAnswer')->middleware('auth:sanctum');
 //posts
 Route::post('/manapost/createPostQuestion', [PostController::class, 'createPostQuestion'])->name('manapost.createPostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/updatePostQuestion', [PostController::class, 'updatePostQuestion'])->name('manapost.updatePostQuestion')->middleware('auth:sanctum');
@@ -94,3 +95,5 @@ Route::post('/rating/deleteRating', [RatingController::class, 'deleteRating'])->
 
 //View
 Route::post('view/startView', [ViewController::class, 'startView'])->name('view.startView')->middleware('auth:sanctum');
+Route::post('view/getUserLastLesson', [ViewController::class, 'getUserLastLesson'])->name('view.getUserLastLesson')->middleware('auth:sanctum');
+Route::post('view/getLastSession', [ViewController::class, 'getLastSession'])->name('view.getLastSession')->middleware('auth:sanctum');

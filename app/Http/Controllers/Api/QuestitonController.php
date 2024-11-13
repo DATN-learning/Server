@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Question;
 use App\Models\Image;
 use App\Models\Answer;
+use App\Models\Score;
 
 class QuestitonController extends Controller
 {
@@ -277,4 +278,52 @@ class QuestitonController extends Controller
         }
     }
 
+    public function submitedChapterAnswer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_score' => 'required',
+            'user_id' => 'required',
+            'question_query_id' => 'required',
+            'answers' => 'required|array',
+            'answers.*.question_id' => 'required',
+            'answers.*.answer_id' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+    
+        $userId = $request->user_id;
+        $idQuestionQuery = $request->question_query_id;
+        $answers = $request->answers;
+    
+        $totalScore = 0;
+    
+        foreach ($answers as $answer) {
+            $question = Question::where('id_question_query', $idQuestionQuery)
+                                ->where('id', $answer['question_id'])
+                                ->first();
+    
+            if ($question) {
+                $isCorrect = $answer['answer_id'] == $question->answer_correct;
+                $totalScore += $isCorrect ? 10 : 0; // Ví dụ: mỗi câu đúng 10 điểm
+            }
+        }
+    
+        // Sau khi đã tính tổng điểm, lưu điểm vào bảng `scores`
+        $score = new Score();
+        $score->id_score = $request->id_score;
+        $score->user_id = $userId;
+        $score->question_query_id = $idQuestionQuery;
+        $score->score = $totalScore;
+        $score->save();
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Chapter completed and score saved',
+            'data' => [
+                'total_score' => $totalScore,
+            ]
+        ], 200);
+    }
 }
