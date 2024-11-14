@@ -288,42 +288,57 @@ class QuestitonController extends Controller
             'answers.*.question_id' => 'required',
             'answers.*.answer_id' => 'required',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
-    
+
         $userId = $request->user_id;
-        $idQuestionQuery = $request->question_query_id;
+        $questionQueryId = $request->question_query_id;
         $answers = $request->answers;
+
     
+        $totalQuestions = Question::where('id_question_query', $questionQueryId)->count();
+        if ($totalQuestions == 0) {
+            return response()->json(['error' => 'No questions found for this chapter.'], 404);
+        }
+
+        $pointsPerQuestion = 10 / $totalQuestions;
         $totalScore = 0;
-    
+
         foreach ($answers as $answer) {
-            $question = Question::where('id_question_query', $idQuestionQuery)
+            $question = Question::where('id_question_query', $questionQueryId)
                                 ->where('id', $answer['question_id'])
                                 ->first();
-    
+            
             if ($question) {
                 $isCorrect = $answer['answer_id'] == $question->answer_correct;
-                $totalScore += $isCorrect ? 10 : 0; // Ví dụ: mỗi câu đúng 10 điểm
+                $totalScore += $isCorrect ? $pointsPerQuestion : 0;
             }
         }
-    
-        // Sau khi đã tính tổng điểm, lưu điểm vào bảng `scores`
-        $score = new Score();
-        $score->id_score = $request->id_score;
-        $score->user_id = $userId;
-        $score->question_query_id = $idQuestionQuery;
-        $score->score = $totalScore;
-        $score->save();
-    
+
+        $existingScore = Score::where('user_id', $userId)
+                            ->where('question_query_id', $questionQueryId)
+                            ->first();
+
+        if ($existingScore) {
+            $existingScore->score = round($totalScore, 2);
+            $existingScore->save();
+        } else {
+            $score = new Score();
+            $score->id_score = $request->id_score;
+            $score->user_id = $userId;
+            $score->question_query_id = $questionQueryId;
+            $score->score = round($totalScore, 2);
+            $score->save();
+        }
+
         return response()->json([
             'status' => true,
-            'message' => 'Chapter completed and score saved',
             'data' => [
-                'total_score' => $totalScore,
+                'total_score' => round($totalScore, 2), 
             ]
         ], 200);
     }
+
 }
