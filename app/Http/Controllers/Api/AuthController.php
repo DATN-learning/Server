@@ -370,11 +370,18 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            //code...
-            $user = User::where('email', $request->email)->first();
-            $tokendata = $request->bearerToken();
-            $check = $user->tokens()->where('id', $tokendata)->delete();
-            if ($check) {
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated',
+                ], 401);
+            }
+
+            $token = $user->currentAccessToken();
+            if ($token) {
+                $token->delete();
                 return response()->json([
                     'status' => true,
                     'message' => 'logout success',
@@ -382,21 +389,14 @@ class AuthController extends Controller
             } else {
                 return response()->json([
                     'status' => false,
-                    'message' => 'logout fail',
-                ], 200);
+                    'message' => 'Token not found',
+                ], 400);
             }
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage(),
             ], 400);
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage(),
-            ], 450);
         }
     }
     public function logoutAll(Request $request)
