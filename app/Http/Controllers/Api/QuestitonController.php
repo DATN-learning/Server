@@ -297,7 +297,7 @@ class QuestitonController extends Controller
         $questionQueryId = $request->question_query_id;
         $answers = $request->answers;
 
-    
+
         $totalQuestions = Question::where('id_question_query', $questionQueryId)->count();
         if ($totalQuestions == 0) {
             return response()->json(['error' => 'No questions found for this chapter.'], 404);
@@ -310,7 +310,7 @@ class QuestitonController extends Controller
             $question = Question::where('id_question_query', $questionQueryId)
                                 ->where('id', $answer['question_id'])
                                 ->first();
-            
+
             if ($question) {
                 $isCorrect = $answer['answer_id'] == $question->answer_correct;
                 $totalScore += $isCorrect ? $pointsPerQuestion : 0;
@@ -326,7 +326,7 @@ class QuestitonController extends Controller
             $existingScore->save();
         } else {
             $score = new Score();
-            $score->id_score = $request->id_score;
+            $score->id_score = uniqid(). $request->id_score;
             $score->user_id = $userId;
             $score->question_query_id = $questionQueryId;
             $score->score = round($totalScore, 2);
@@ -336,7 +336,7 @@ class QuestitonController extends Controller
         return response()->json([
             'status' => true,
             'data' => [
-                'total_score' => round($totalScore, 2), 
+                'total_score' => round($totalScore, 2),
             ]
         ], 200);
     }
