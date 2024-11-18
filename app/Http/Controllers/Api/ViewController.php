@@ -53,9 +53,10 @@ class ViewController extends Controller
     public function getUserLastLesson(Request $request)
     {
 
-        $validator = Validator::make($request->all (), [
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required'
         ]);
+    
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -63,53 +64,84 @@ class ViewController extends Controller
                 'errors' => $validator->errors()
             ], 400);
         }
-
-        // Lấy bản ghi View mới nhất của user theo `user_id`
-        $lastView = View::where('user_id', $request->user_id)->orderBy('created_at', 'desc')->first();
-
-        if (!$lastView) {
-            return response()->json(['message' => 'No lessons found for this user'], 404);
+    
+        $userId = $request->user_id;
+    
+        // Lấy 5 lần xem gần nhất của user theo `user_id`
+        $lastViews = View::where('user_id', $userId)
+            ->orderBy('id', 'desc')
+            ->take(5)
+            ->get();
+    
+        $data = [];
+        foreach ($lastViews as $view) {
+            $lesstionChapter = LesstionChapter::with(['chapterSubject.subjects.classRoom'])
+                ->where('id_lesstion_chapter', $view->id_view_query)
+                ->first();
+    
+            if ($lesstionChapter) {
+                // Lấy bài học tiếp theo
+                $nextLesson = LesstionChapter::where('chapter_subject_id', $lesstionChapter->chapter_subject_id)
+                    ->where('number_lesstion_chapter', '>', $lesstionChapter->number_lesstion_chapter)
+                    ->orderBy('number_lesstion_chapter', 'asc') // Sắp xếp để lấy bài tiếp theo
+                    ->first();
+    
+                if($nextLesson){
+                    $data[] = $nextLesson;
+                }
+            }
         }
-
-        // Lấy LesstionChapter từ id_view_query
-        $lesstionChapter = LesstionChapter::where('id_lesstion_chapter', $lastView->id_view_query)->first();
-
-        if (!$lesstionChapter) {
-            return response()->json(['message' => 'Lesstion chapter not found'], 404);
-        }
-
-        // Lấy ChapterSubject từ chapter_subject_id
-        $chapterSubject = $lesstionChapter->chapterSubject;
-
-        if (!$chapterSubject) {
-            return response()->json(['message' => 'Chapter subject not found'], 404);
-        }
-
-        // Lấy Subject từ subject_id
-        $subject = $chapterSubject->subjects;
-
-        if (!$subject) {
-            return response()->json(['message' => 'Subject not found'], 404);
-        }
-
-        // Lấy Classroom từ classroom_id
-        $classroom = $subject->classRoom;
-
-        if (!$classroom) {
-            return response()->json(['message' => 'Classroom not found'], 404);
-        }
-
-        // Trả về thông tin
+    
         return response()->json([
-            'id_lession_chapter' => [
-                $lesstionChapter->id_lesstion_chapter
-            ],
+            'status' => true,
+            'data' => $data,
         ]);
     }
 
     public function getLastSession(Request $request)
     {
-       
+            $validator = Validator::make($request->all(), [
+                'user_id' => 'required'
+            ]);
+        
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+        
+            $userId = $request->user_id;
+        
+            // Lấy 5 lần xem gần nhất của user theo `user_id`
+            $lastViews = View::where('user_id', $request->user_id)
+            ->orderBy('id', 'desc')
+            ->take(5)
+            ->get();
+
+        $data = [];
+        foreach ($lastViews as $view) {
+            $lesstionChapter = LesstionChapter::with(['chapterSubject.subjects.classRoom'])
+                ->where('id_lesstion_chapter', $view->id_view_query)
+                ->first();
+
+            if ($lesstionChapter) {
+                $data[] = [
+                    'id_lession_chapter' => $lesstionChapter->id_lesstion_chapter,
+                    'chapter_subject' => $lesstionChapter->chapterSubject->id ?? null,
+                    'subject' => $lesstionChapter->chapterSubject->subjects->id ?? null,
+                    'classroom' => $lesstionChapter->chapterSubject->subjects->classRoom->id ?? null,
+                    'viewed_at' => $view->created_at,
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ]);
+            
     }
 
 
