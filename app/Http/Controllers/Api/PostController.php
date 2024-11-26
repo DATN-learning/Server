@@ -48,6 +48,37 @@ class PostController extends Controller
             'data' => $posts
         ], 200);
     }
+
+    public function getPostQuestionByClassRoom(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'class_room_id' => 'required',
+            'subject_id' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validate error',
+                'error' => $validator->errors()
+            ], 200);
+        }
+        $posts = $request->subject_id ?
+            Post::where('class_room_id', $request->class_room_id)->where('subject_id', $request->subject_id)->get() :
+            Post::where('class_room_id', $request->class_room_id)->get();
+        $posts->map(function ($post) {
+            $post->images = Image::where('id_query_image', $post->id_post)->get();
+            foreach ($post->images as $image) {
+                $image->url_image = url('/images/' . $image->url_image);
+            }
+            $post->getDataAnalytics;
+        });
+        return response()->json([
+            'status' => true,
+            'message' => 'success',
+            'data' => $posts
+        ], 200);
+    }
+
     public  function getPostQuestionByLable(Request $request)
     {
         # code...

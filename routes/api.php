@@ -73,13 +73,15 @@ Route::post('/question/submitedChapterAnswer', [QuestitonController::class, 'sub
 Route::post('/manapost/createPostQuestion', [PostController::class, 'createPostQuestion'])->name('manapost.createPostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/updatePostQuestion', [PostController::class, 'updatePostQuestion'])->name('manapost.updatePostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/deletePostQuestion', [PostController::class, 'deletePostQuestion'])->name('manapost.deletePostQuestion')->middleware('auth:sanctum');
-Route::get('/manapost/getPostQuestion', [PostController::class, 'getPostQuestion'])->name('manapost.getPostQuestion');
+Route::get('/manapost/getPostQuestion', [PostController::class, 'getPostQuestion'])->name('manapost.getPostQuestion')->middleware('auth:sanctum'); 
 Route::post('/manapost/getPostQuestionByLable', [PostController::class, 'getPostQuestionByLable'])->name('manapost.getPostQuestionByLable')->middleware('auth:sanctum');
 Route::post('/manapost/getPostQuestionById', [PostController::class, 'getPostQuestionById'])->name('manapost.getPostQuestionById')->middleware('auth:sanctum');
 Route::get('/manapost/getCommentPost', [PostController::class, 'getCommentPost'])->name('manapost.getCommentPost')->middleware('auth:sanctum');
 Route::post('/manapost/createCommentPost', [PostController::class, 'createCommentPost'])->name('manapost.createCommentPost')->middleware('auth:sanctum');
 Route::post('/manapost/updateCommentPost', [PostController::class, 'updateCommentPost'])->name('manapost.updateCommentPost')->middleware('auth:sanctum');
 Route::post('/manapost/deleteCommentPost', [PostController::class, 'deleteCommentPost'])->name('manapost.deleteCommentPost')->middleware('auth:sanctum');
+
+Route::post('/manapost/getPostQuestionByClassRoom', [PostController::class, 'getPostQuestionByClassRoom'])->name('manapost.getPostQuestionByClassRoom')->middleware('auth:sanctum');
 // token notification
 Route::post('/tokennotification', [TokenNotificationController::class, 'createTokenDevice'])->name('tokennotification.store');
 // chatgpt
