@@ -215,7 +215,7 @@ class QuestitonController extends Controller
         if ($answerDb) {
             $answerDb->answer_text = $answer['answer_text'];
             $answerDb->save();
-        } 
+        }
     }
 
     // Cập nhật answer_correct cho question
@@ -343,13 +343,11 @@ class QuestitonController extends Controller
 
     public function getPointChapter(Request $request)
     {
-        // Kiểm tra dữ liệu đầu vào
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'id_score' => 'required', // Đảm bảo `id_score` là số nguyên
+            'question_query_id' => 'required'
         ]);
-    
-        // Xử lý lỗi nếu validate thất bại
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -357,17 +355,14 @@ class QuestitonController extends Controller
                 'errors' => $validator->errors(),
             ], 400);
         }
-    
-        // Lấy thông tin `user_id` và `id_score` từ request
+
         $userId = $request->user_id;
-        $idScore = $request->id_score;
-    
-        // Truy vấn bảng `scores` để tìm điểm
+        $questionQueryId = $request->question_query_id;
+
         $score = Score::where('user_id', $userId)
-            ->where('id_score', $idScore)
+            ->where('question_query_id', $questionQueryId)
             ->first();
-    
-        // Xử lý khi không tìm thấy điểm
+
         if (!$score) {
             return response()->json([
                 'status' => false,
@@ -375,13 +370,11 @@ class QuestitonController extends Controller
                 'data' => null,
             ], 404);
         }
-    
-        // Trả về dữ liệu điểm nếu tìm thấy
+
         return response()->json([
             'status' => true,
             'message' => 'Score retrieved successfully',
-            'data' => [
-                $score            ],
+            'data' => $score
         ], 200);
     }
 }
