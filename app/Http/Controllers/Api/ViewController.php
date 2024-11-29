@@ -65,13 +65,14 @@ class ViewController extends Controller
 
         $userId = $request->user_id;
 
-        // Lấy 5 lần xem gần nhất của user theo `user_id`
+        // Lấy 5 lần xem gần nhất của user theo user_id
         $lastViews = View::where('user_id', $userId)
             ->orderBy('id', 'desc')
-            ->take(5)
             ->get();
 
         $data = [];
+        $processedChapters = []; // Tập hợp các chương đã xử lý
+
         foreach ($lastViews as $view) {
             // Lấy thông tin bài học hiện tại
             $lesstionChapter = LesstionChapter::with(['chapterSubject'])
@@ -79,8 +80,18 @@ class ViewController extends Controller
                 ->first();
 
             if ($lesstionChapter) {
+                $chapterId = $lesstionChapter->chapter_subject_id;
+
+                // Bỏ qua nếu chương này đã được xử lý
+                if (in_array($chapterId, $processedChapters)) {
+                    continue;
+                }
+
+                // Đánh dấu chương này đã được xử lý
+                $processedChapters[] = $chapterId;
+
                 // Lấy bài học tiếp theo
-                $nextLesson = LesstionChapter::where('chapter_subject_id', $lesstionChapter->chapter_subject_id)
+                $nextLesson = LesstionChapter::where('chapter_subject_id', $chapterId)
                     ->where('number_lesstion_chapter', '>', $lesstionChapter->number_lesstion_chapter)
                     ->orderBy('number_lesstion_chapter', 'asc')
                     ->first();
@@ -90,16 +101,20 @@ class ViewController extends Controller
                     $chapter = $lesstionChapter->chapterSubject;
                     $chapter->chapter_image = asset('images/' . $chapter->chapter_image);
 
-                    // Gắn bài học tiếp theo vào chương
-
-                    // Chỉ thêm mục này vào data nếu có next_lesson
+                    // Chỉ thêm vào kết quả nếu có bài học tiếp theo
                     $data[] = [
                         'chapter' => $chapter,
                         'next_lesson' => $nextLesson,
                     ];
                 }
             }
+
+            // Dừng lại khi đã lấy đủ 5 chương
+            if (count($data) >= 5) {
+                break;
+            }
         }
+
         return response()->json([
             'status' => true,
             'data' => $data,
