@@ -69,6 +69,7 @@ Route::post('/question/createQuestion', [QuestitonController::class, 'createQues
 Route::post('/question/updateQuestion', [QuestitonController::class, 'updateQuestion'])->name('question.updateQuestion')->middleware('auth:sanctum');
 Route::post('/question/deleteQuestion', [QuestitonController::class, 'deleteQuestion'])->name('question.deleteQuestion')->middleware('auth:sanctum');
 Route::post('/question/submitedChapterAnswer', [QuestitonController::class, 'submitedChapterAnswer'])->name('question.submitedChapterAnswer')->middleware('auth:sanctum');
+Route::post('/question/getPointChapter', [QuestitonController::class, 'getPointChapter'])->name('question.getPointChapter')->middleware('auth:sanctum');
 //posts
 Route::post('/manapost/createPostQuestion', [PostController::class, 'createPostQuestion'])->name('manapost.createPostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/updatePostQuestion', [PostController::class, 'updatePostQuestion'])->name('manapost.updatePostQuestion')->middleware('auth:sanctum');
