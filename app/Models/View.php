@@ -13,8 +13,7 @@ class View extends Model
         'view_id',
         'user_id',
         'id_view_query',
-        'start_time',
-        'end_time',
+        'time_view',
     ];
 
     public function userCreate()
