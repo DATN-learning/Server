@@ -80,7 +80,8 @@ class AuthController extends Controller
         }
     }
 
-    public function getProfile(Request $request){
+    public function getProfile(Request $request)
+    {
         $user = User::with('profile')->find($request->user()->id);
 
         if ($user && $user->profile) {
@@ -132,9 +133,15 @@ class AuthController extends Controller
                 'nick_name' => 'nullable|string|max:255',
                 'address' => 'nullable|string|max:255',
                 'date_of_birth' => 'nullable|date',
-                'class_name' => 'nullable|string|max:255',
-                'school_name' => 'nullable|string|max:255',
+                'gender' => 'nullable|string|max:255',
+                'id_cover_image' => 'nullable|file|image|max:2048', // Kiểm tra file là hình ảnh
+                'id_image' => 'nullable|file|image|max:2048',      // Tương tự cho id_image
                 'hashtag' => 'nullable|string|max:255',
+                'level_number' => 'nullable|integer',
+                'experience_point' => 'nullable|integer',
+                'number_stars' => 'nullable|integer',
+                'school_name' => 'nullable|string|max:255',
+                'class_room_id' => 'nullable|string|max:255',
             ]
         );
 
@@ -155,34 +162,65 @@ class AuthController extends Controller
         }
 
         // Cập nhật thông tin cơ bản của người dùng
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;
+        $user->first_name = $request->first_name ?? $user->first_name;
+        $user->last_name = $request->last_name ?? $user->last_name;
         $user->save();
 
-        // Cập nhật thông tin profile của người dùng
+        // Cập nhật thông tin profile
         $profile = ProfileUser::where('user_id', $user->id)->first();
 
-        if ($profile) {
-            $profile->nick_name = $request->nick_name ?? $profile->nick_name;
-            $profile->address = $request->address ?? $profile->address;
-            $profile->date_of_birth = $request->date_of_birth ?? $profile->date_of_birth;
-            $profile->class_name = $request->class_name ?? $profile->class_name;
-            $profile->school_name = $request->school_name ?? $profile->school_name;
-            $profile->hashtag = $request->hashtag ?? $profile->hashtag;
-            $profile->save();
-        } else {
+        if (!$profile) {
             return response()->json([
                 'status' => false,
                 'message' => 'Profile not found',
             ], 404);
         }
 
+        // Cập nhật các trường khác
+        $profile->nick_name = $request->nick_name ?? $profile->nick_name;
+        $profile->address = $request->address ?? $profile->address;
+        $profile->date_of_birth = $request->date_of_birth ?? $profile->date_of_birth;
+        $profile->gender = $request->gender ?? $profile->gender;
+        $profile->hashtag = $request->hashtag ?? $profile->hashtag;
+        $profile->level_number = $request->level_number ?? $profile->level_number;
+        $profile->experience_point = $request->experience_point ?? $profile->experience_point;
+        $profile->number_stars = $request->number_stars ?? $profile->number_stars;
+        $profile->class_room_id = $request->class_room_id ?? $profile->class_room_id;
+        $profile->school_name = $request->school_name ?? $profile->school_name;
+
+        // Xử lý file upload cho `id_image`
+        if ($request->hasFile('id_image')) {
+            $oldImagePath = public_path('images/' . $profile->id_image);
+            if (file_exists($oldImagePath) && !empty($profile->id_image)) {
+                unlink($oldImagePath); // Xóa file cũ nếu tồn tại
+            }
+
+            $newIdImageName = time() . uniqid() . '.' . $request->file('id_image')->getClientOriginalExtension();
+            $profile->id_image = $newIdImageName;
+
+            $request->file('id_image')->move(public_path('images'), $newIdImageName);
+        }
+
+        // Xử lý file upload cho `id_cover_image`
+        if ($request->hasFile('id_cover_image')) {
+            $oldCoverPath = public_path('images/' . $profile->id_cover_image);
+            if (file_exists($oldCoverPath) && !empty($profile->id_cover_image)) {
+                unlink($oldCoverPath); // Xóa file cover cũ nếu tồn tại
+            }
+
+            $newCoverImageName = time() . uniqid() . '.' . $request->file('id_cover_image')->getClientOriginalExtension();
+            $profile->id_cover_image = $newCoverImageName;
+
+            $request->file('id_cover_image')->move(public_path('images'), $newCoverImageName);
+        }
+
+        $profile->save();
+
         return response()->json([
             'status' => true,
             'message' => 'Profile updated successfully',
         ], 200);
     }
-
     public function deleteUserByProfileId(Request $request)
     {
         // Xác thực rằng người dùng đã đăng nhập
