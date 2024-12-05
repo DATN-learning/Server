@@ -85,6 +85,7 @@ class AuthController extends Controller
         $user = User::with('profile')->find($request->user()->id);
 
         if ($user && $user->profile) {
+            $user->profile->id_image = asset('images/' . $user->profile->id_image);
             return response()->json([
                 'data' => $user
             ], 200);

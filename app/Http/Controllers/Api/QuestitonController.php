@@ -365,7 +365,7 @@ class QuestitonController extends Controller
 
         if (!$score) {
             return response()->json([
-                'status' => false,
+                'status' => true,
                 'message' => 'Score not found for the given user and score ID',
                 'data' => null,
             ], 200);

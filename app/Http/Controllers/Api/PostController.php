@@ -18,10 +18,11 @@ class PostController extends Controller
     public function getPostQuestion(Request $request)
     {
         $posts = $request->class ?
-            ($request->subject
-                ? Post::where('class_room_id', $request->class)->where('subject_id', $request->subject)->get()
-                : Post::where('class_room_id', $request->class)->get()
-            ) : Post::all();
+        ($request->subject
+            ? Post::where('class_room_id', $request->class)->where('subject_id', $request->subject)->orderBy('created_at', 'desc')->get()
+            : Post::where('class_room_id', $request->class)->orderBy('created_at', 'desc')->get()
+        ) : Post::orderBy('created_at', 'desc')->get();
+
 
         $posts->map(function ($post) {
             $post->images = Image::where('id_query_image', $post->id_post)->get();
@@ -36,11 +37,11 @@ class PostController extends Controller
 
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = $request->per_page ? $request->per_page : 10;
-        $currentPageSearchResults = $posts->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $currentPageSearchResults = $posts->slice(($currentPage - 1) * $perPage, $perPage)->values();
         $posts = new LengthAwarePaginator($currentPageSearchResults, count($posts), $perPage);
         $posts->setPath($request->url() . '?' . 'class=' . $request->class . '&subject=' . $request->subject . '&per_page=' . $request->per_page);
         $posts = $posts->toArray();
-        $posts['data'] = $posts['data'] ? array_reverse($posts['data']) : [];
+        $posts['data'] = $posts['data'] ? $posts['data'] : [];
 
         return response()->json([
             'status' => true,
@@ -100,7 +101,7 @@ class PostController extends Controller
         $posts->map(function ($post) {
             $post->images = Image::where('id_query_image', $post->id_post)->get();
             foreach ($post->images as $image) {
-                $image->url_image = url('/images/' . $image->url_image);
+                $image->url_image = asset('/images/' . $image->url_image);
             }
             $post->getDataAnalytics;
         });
@@ -467,6 +468,7 @@ class PostController extends Controller
             $image->move(public_path() . '/images/', $name);
             $image = new Image();
             $image->id_image = 'comment' . $comment->comment_id . uniqid() . 'image';
+            // $image->id_image = 'comment' . $comment->comment_id . uniqid() ;
             $image->url_image = $name;
             $image->id_query_image = $comment->comment_id;
             $isCreateImageComment = $image->save();
