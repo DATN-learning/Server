@@ -74,7 +74,7 @@ Route::post('/question/getPointChapter', [QuestitonController::class, 'getPointC
 Route::post('/manapost/createPostQuestion', [PostController::class, 'createPostQuestion'])->name('manapost.createPostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/updatePostQuestion', [PostController::class, 'updatePostQuestion'])->name('manapost.updatePostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/deletePostQuestion', [PostController::class, 'deletePostQuestion'])->name('manapost.deletePostQuestion')->middleware('auth:sanctum');
-Route::get('/manapost/getPostQuestion', [PostController::class, 'getPostQuestion'])->name('manapost.getPostQuestion')->middleware('auth:sanctum'); 
+Route::get('/manapost/getPostQuestion', [PostController::class, 'getPostQuestion'])->name('manapost.getPostQuestion')->middleware('auth:sanctum');
 Route::post('/manapost/getPostQuestionByLable', [PostController::class, 'getPostQuestionByLable'])->name('manapost.getPostQuestionByLable')->middleware('auth:sanctum');
 Route::post('/manapost/getPostQuestionById', [PostController::class, 'getPostQuestionById'])->name('manapost.getPostQuestionById')->middleware('auth:sanctum');
 Route::get('/manapost/getCommentPost', [PostController::class, 'getCommentPost'])->name('manapost.getCommentPost')->middleware('auth:sanctum');
@@ -87,7 +87,7 @@ Route::post('/manapost/getPostQuestionByClassRoom', [PostController::class, 'get
 Route::post('/tokennotification', [TokenNotificationController::class, 'createTokenDevice'])->name('tokennotification.store');
 // chatgpt
 // Route::get('/chatgpt/ask', [ChatGptController::class, 'ask'])->name('chatgpt.ask');
-Route::post('/chat', [ChatBotController::class, 'chat'])->name('chat.chat');
+Route::post('/chat', [ChatBotController::class, 'chat']);
 
 //Rating
 Route::post('/rating/createRating', [RatingController::class, 'createRating'])->name('rating.createRating')->middleware('auth:sanctum');

@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use OpenAI\Laravel\Facades\OpenAI;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ChatBotController extends Controller
@@ -12,31 +11,42 @@ class ChatBotController extends Controller
     public function chat(Request $request)
     {
         try {
-            // Validate request input
             $request->validate([
                 'message' => 'required|string',
             ]);
 
-            // Gửi yêu cầu đến OpenAI
-            $result = OpenAI::chat()->create([
-                'max_tokens' => 1000,
-                'model' => 'gpt-3.5-turbo',
-                'prompt' => $request->message
+            $ollamaPayload = [
+                'model' => 'gemma2:2b',
+                'messages' => [
+                    ['role' => 'user', 'content' => $request->message],
+                ],
+                'stream' => false,
+            ];
+
+            $response = Http::post(env('OLLAMA_API_BASE_URL') . '/chat', $ollamaPayload);
+                if ($response->successful()) {
+                return response()->json([
+                    'message' => $response->json()['message']['content'] ?? '',
+                ]);
+            }
+
+            Log::error('Ollama API Error', [
+                'status' => $response->status(),
+                'response' => $response->body(),
             ]);
 
-            // Lấy phản hồi từ OpenAI
-            $response = array_reduce(
-                $result->toArray()['choices'],
-                fn(string $result, array $choice) => $result . $choice['text'],
-                ""
-            );
-
-            return response()->json(['response' => $response]);
-
+            return response()->json([
+                'error' => 'Ollama API returned an error. Please check the logs.',
+            ], $response->status());
         } catch (\Exception $e) {
-            // Log lỗi và trả về thông báo lỗi
-            Log::error('ChatGPT controller error: ' . $e->getMessage());
-            return response()->json(['error' => 'Đã xảy ra lỗi khi xử lý yêu cầu'], 500);
+            Log::error('ChatBotController Exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTrace(),
+            ]);
+
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi khi xử lý yêu cầu.',
+            ], 500);
         }
     }
 }
