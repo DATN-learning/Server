@@ -185,7 +185,7 @@ class ChapterController extends Controller
         $idParts[] = $request->number_chapter;
 
         $newChapterSubject = implode('-', $idParts);
-        // $newChapterSubject = $request->id_chapter_subject . '-' . $request->number_chapter;
+        //$newChapterSubject = $request->id_chapter_subject . '-' . $request->number_chapter;
         $chapter->id_chapter_subject = $newChapterSubject;
         $chapter->name_chapter_subject = $request->name_chapter_subject;
         $chapter->number_chapter = $request->number_chapter;
