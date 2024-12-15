@@ -15,7 +15,7 @@ class ProfileUser extends Model
         'nick_name',
         'address',
         'date_of_birth',
-        'avatar',
+        'gender',
         'id_image',
         'id_cover_image',
         'hashtag',
@@ -23,7 +23,7 @@ class ProfileUser extends Model
         'experience_point',
         'number_stars',
         'school_name',
-        'class_name',
+        'class_room_id',
         'created_at',
         'updated_at',
     ];

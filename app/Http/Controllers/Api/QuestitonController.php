@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Question;
 use App\Models\Image;
 use App\Models\Answer;
+use App\Models\Score;
 
 class QuestitonController extends Controller
 {
@@ -98,9 +99,9 @@ class QuestitonController extends Controller
             $question->slug = $request->slug;
 
             if ($request->hasFile('image_question')) {
-                $newNameImage = time() . uniqid() . $request->id_question . '.' . $request->image_question->getClientOriginalExtension();
+                $newNameImage = time() .$request->id_question . '.' . $request->image_question->getClientOriginalExtension();
                 $image = new Image();
-                $image->id_image = time() . uniqid() . $request->id_question;
+                $image->id_image = time() . $request->id_question;
                 $image->id_query_image = $request->id_question;
                 $image->url_image = $newNameImage;
                 $isSaveImage = $image->save();
@@ -158,14 +159,13 @@ class QuestitonController extends Controller
                 ]
             ], 200);
 }
-    
+
     public function updateQuestion(Request $request)
 {
     // Validate dữ liệu request
     $validator = Validator::make($request->all(), [
         'id_question' => 'required',
-        
-        'answers' => 'required|array|min:2', 
+        'answers' => 'required|array',
     ]);
 
     if ($validator->fails()) {
@@ -187,6 +187,7 @@ class QuestitonController extends Controller
     $question->description = $request->description;
     $question->level_question = $request->level_question;
     $question->number_question = $request->number_question;
+    $question->slug = $request->slug;
 
     // Kiểm tra xem answer_correct có nằm trong danh sách các câu trả lời không
     $answerCorrectId = null;
@@ -212,17 +213,8 @@ class QuestitonController extends Controller
             ->first();
 
         if ($answerDb) {
-            // Cập nhật câu trả lời hiện có
             $answerDb->answer_text = $answer['answer_text'];
             $answerDb->save();
-        } else {
-            // Thêm câu trả lời mới nếu chưa tồn tại
-            $newAnswer = new Answer();
-            $newAnswer->id_answer = uniqid() . $answer['id_answer'];
-            $newAnswer->question_id = $question->id;
-            $newAnswer->answer_text = $answer['answer_text'];
-            $newAnswer->slug = uniqid() . $answer['id_answer'];
-            $newAnswer->save();
         }
     }
 
@@ -255,8 +247,6 @@ class QuestitonController extends Controller
 }
 
 
-    
-
     public function deleteQuestion(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -288,4 +278,103 @@ class QuestitonController extends Controller
         }
     }
 
+    public function submitedChapterAnswer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_score' => 'required',
+            'user_id' => 'required',
+            'question_query_id' => 'required',
+            'answers' => 'required|array',
+            'answers.*.question_id' => 'required',
+            'answers.*.answer_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $userId = $request->user_id;
+        $questionQueryId = $request->question_query_id;
+        $answers = $request->answers;
+
+
+        $totalQuestions = Question::where('id_question_query', $questionQueryId)->count();
+        if ($totalQuestions == 0) {
+            return response()->json(['error' => 'No questions found for this chapter.'], 404);
+        }
+
+        $pointsPerQuestion = 10 / $totalQuestions;
+        $totalScore = 0;
+
+        foreach ($answers as $answer) {
+            $question = Question::where('id_question_query', $questionQueryId)
+                                ->where('id', $answer['question_id'])
+                                ->first();
+
+            if ($question) {
+                $isCorrect = $answer['answer_id'] == $question->answer_correct;
+                $totalScore += $isCorrect ? $pointsPerQuestion : 0;
+            }
+        }
+
+        $existingScore = Score::where('user_id', $userId)
+                            ->where('question_query_id', $questionQueryId)
+                            ->first();
+
+        if ($existingScore) {
+            $existingScore->score = round($totalScore, 2);
+            $existingScore->save();
+        } else {
+            $score = new Score();
+            $score->id_score = uniqid(). $request->id_score;
+            $score->user_id = $userId;
+            $score->question_query_id = $questionQueryId;
+            $score->score = round($totalScore, 2);
+            $score->save();
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'total_score' => round($totalScore, 2),
+            ]
+        ], 200);
+    }
+
+    public function getPointChapter(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'question_query_id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $userId = $request->user_id;
+        $questionQueryId = $request->question_query_id;
+
+        $score = Score::where('user_id', $userId)
+            ->where('question_query_id', $questionQueryId)
+            ->first();
+
+        if (!$score) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Score not found for the given user and score ID',
+                'data' => null,
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Score retrieved successfully',
+            'data' => $score
+        ], 200);
+    }
 }
