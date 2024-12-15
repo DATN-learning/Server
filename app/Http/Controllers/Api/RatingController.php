@@ -32,7 +32,7 @@ class RatingController extends Controller
 
         $rating = new Rating();
         $rating->user_id = $request->user_id;
-        $rating->rating_id = $request->rating_id ;
+        $rating->rating_id = $request->rating_id . time() . random_int(1000, 9999);
         $rating->lesstion_chapter_id = $request->lesstion_chapter_id;
         $rating->content = $request->content;
         $rating->rating = $request->rating;
@@ -40,9 +40,7 @@ class RatingController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'create rating success',
-            'data' => [
-                'rating' => $rating
-            ]
+            'data' => $rating
         ], 200);
 
     }
