@@ -78,9 +78,7 @@ class RatingController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Get rating success',
-            'data' => [
-                'rating' => $ratings
-            ]
+            'data' => $ratings
         ], 200);
     }
 
