@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ViewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use GuzzleHttp\Client;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -95,6 +96,7 @@ Route::post('/rating/getRatingByLessionChapterId', [RatingController::class, 'ge
 Route::post('/rating/getAllRating', [RatingController::class, 'getAllRating'])->name('rating.getAllRating')->middleware('auth:sanctum');
 Route::post('/rating/updateRating', [RatingController::class, 'updateRating'])->name('rating.updateRating')->middleware('auth:sanctum');
 Route::post('/rating/deleteRating', [RatingController::class, 'deleteRating'])->name('rating.deleteRating')->middleware('auth:sanctum');
+Route::get('/rating/getlesson_by_rating/{user_id}', [RatingController::class, 'getLessonByRating']);
 
 //View
 Route::post('view/startView', [ViewController::class, 'startView'])->name('view.startView')->middleware('auth:sanctum');
