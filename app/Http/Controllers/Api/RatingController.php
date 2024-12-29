@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Rating;
 use Illuminate\Support\Facades\Validator;
+use GuzzleHttp\Client;
 
 class RatingController extends Controller
 {
@@ -139,5 +140,30 @@ class RatingController extends Controller
             'status' => true,
             'message' => 'delete rating success'
         ], 200);
+    }
+
+    public function getLessonByRating($user_id)
+    {
+        try {
+            $client = new Client();
+
+            $flaskUrl = env('FLASK_API_URL') . "/api/ratings/getratings/{$user_id}";
+
+            $response = $client->get($flaskUrl);
+
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Fetched lesson recommendations successfully',
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch lesson recommendations',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
