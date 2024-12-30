@@ -21,7 +21,7 @@ class PostController extends Controller
         ($request->subject
             ? Post::where('class_room_id', $request->class)->where('subject_id', $request->subject)->orderBy('created_at', 'desc')->get()
             : Post::where('class_room_id', $request->class)->orderBy('created_at', 'desc')->get()
-        ) : Post::orderBy('created_at', 'desc')->get();
+        ) : Post::orderBy('created_at', 'asc')->get();
 
 
         $posts->map(function ($post) {
@@ -31,7 +31,7 @@ class PostController extends Controller
             }
             $post->timeAgo = $post->created_at->diffForHumans();
             $post->userCreate;
-            // $post->userCreate->avatar = url('/images/' . $post->userCreate->profile->id_image);
+            $post->userCreate->avatar = url('/images/' . $post->userCreate->profile->id_image);
             unset($post->userCreate->profile);
         });
 
@@ -372,7 +372,7 @@ class PostController extends Controller
             }
             $post->timeAgo = $post->created_at->diffForHumans();
             $post->userCreate;
-            // $post->userCreate->avatar = url('/images/' . $post->userCreate->profile->id_image);
+            $post->userCreate->avatar = url('/images/' . $post->userCreate->profile->id_image);
             $post->classNumber = $post->classRoom->name_class;
             $post->subjectName = $post->subject ? $post->subject->name_subject : null;
             unset($post->classRoom);
@@ -419,7 +419,7 @@ class PostController extends Controller
             }
             $comment->timeAgo = $comment->created_at->diffForHumans();
             $comment->userCreate;
-            // $comment->userCreate->avatar = url('/images/' . $comment->userCreate->profile->id_image);
+            $comment->userCreate->avatar = url('/images/' . $comment->userCreate->profile->id_image);
             unset($comment->userCreate->profile);
         }
         $post->comments = $post->getComments;
